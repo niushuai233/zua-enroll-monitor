@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  */
 @Data
 @Component
-@ConfigurationProperties(prefix = "custom-env")
+@ConfigurationProperties(prefix = "niushuai233.zua")
 public class CustomEnv {
 
     private String requestUrl;
