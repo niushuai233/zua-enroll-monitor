@@ -21,6 +21,7 @@ spring:
 
 niushuai233:
   zua:
+    night: false
     requestUrl: http://zua-enroll.cpdaily.com/cr-admission/crAdmissionData/queryLqResult
     idcardNumber: xxxxx
     examNumber: xxxxx

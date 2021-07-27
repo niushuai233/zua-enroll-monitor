@@ -62,6 +62,10 @@ public class ZuaEnrollHandler {
 
     private boolean isNight() {
 
+        if (Boolean.FALSE.toString().equalsIgnoreCase(customEnv.getNight())) {
+            return false;
+        }
+
         int currHour = DateUtil.date().getField(DateField.HOUR_OF_DAY);
         if (currHour > 9 && currHour < 21) {
             return false;

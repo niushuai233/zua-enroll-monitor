@@ -22,4 +22,5 @@ public class CustomEnv {
     private String cropid;
     private String secret;
     private String toUser;
+    private String night;
 }
