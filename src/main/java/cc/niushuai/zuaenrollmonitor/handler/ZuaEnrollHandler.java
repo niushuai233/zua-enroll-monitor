@@ -45,9 +45,9 @@ public class ZuaEnrollHandler {
     @Scheduled(initialDelay = 1000L, fixedDelay = 2 * 60 * 60 * 1000L)
     public void research() {
 
-//        if (isNight()){
-//            return;
-//        }
+        if (isNight()){
+            return;
+        }
 
         Student student = new Student().setSfzh(customEnv.getIdcardNumber()).setKsh(customEnv.getExamNumber());
 
