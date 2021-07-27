@@ -1,6 +1,24 @@
 server:
   port: 23303
 
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./zuax
+    username: niushuai233
+    password: niushuai233
+  h2:
+    console:
+      enabled: true
+      settings:
+        web-allow-others: true
+        web-admin-password: niushuai233
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
 niushuai233:
   zua:
     requestUrl: http://zua-enroll.cpdaily.com/cr-admission/crAdmissionData/queryLqResult
@@ -9,3 +27,4 @@ niushuai233:
     agentid: xxxxx
     cropid: xxxxx
     secret: xxxxx
+    toUser: xxxxx

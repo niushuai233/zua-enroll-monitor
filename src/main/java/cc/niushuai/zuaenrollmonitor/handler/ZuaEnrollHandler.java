@@ -1,12 +1,15 @@
 package cc.niushuai.zuaenrollmonitor.handler;
 
 import cc.niushuai.zuaenrollmonitor.config.CustomEnv;
-import cc.niushuai.zuaenrollmonitor.entity.ResBean;
+import cc.niushuai.zuaenrollmonitor.dao.EnrollLogRepository;
+import cc.niushuai.zuaenrollmonitor.entity.EnrollLog;
 import cc.niushuai.zuaenrollmonitor.entity.Result;
 import cc.niushuai.zuaenrollmonitor.entity.Student;
 import cc.niushuai.zuaenrollmonitor.util.MessageUtil;
 import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * 定时任务处理类
@@ -35,12 +39,15 @@ public class ZuaEnrollHandler {
     @Resource
     private MessageUtil messageUtil;
 
+    @Resource
+    private EnrollLogRepository enrollLogRepository;
+
     @Scheduled(initialDelay = 1000L, fixedDelay = 2 * 60 * 60 * 1000L)
     public void research() {
 
-        if (isNight()){
-            return;
-        }
+//        if (isNight()){
+//            return;
+//        }
 
         Student student = new Student().setSfzh(customEnv.getIdcardNumber()).setKsh(customEnv.getExamNumber());
 
@@ -71,7 +78,8 @@ public class ZuaEnrollHandler {
             // 成功, 发送消息
             Result result = JSONUtil.toBean(res, Result.class);
             String datas = result.getDatas().toString();
-            ResBean bean = JSONUtil.toBean(datas, ResBean.class);
+            EnrollLog bean = JSONUtil.toBean(datas, EnrollLog.class);
+            bean.setSfzh(student.getSfzh()).setKsh(student.getKsh());
 
             if (bean.getLqResult().equals("1")) {
 
@@ -90,16 +98,20 @@ public class ZuaEnrollHandler {
             } else {
                 // 未录取
                 buffer.append("查询成功: 未查询到相关信息").append(System.lineSeparator())
-                .append("查询时间: ").append(DateUtil.now()).append(System.lineSeparator())
-                .append("请求参数: ").append(JSONUtil.toJsonStr(student)).append(System.lineSeparator())
-                .append("响应参数: ").append(res).append(System.lineSeparator());
+                        .append("查询时间: ").append(DateUtil.now()).append(System.lineSeparator())
+                        .append("请求参数: ").append(JSONUtil.toJsonStr(student)).append(System.lineSeparator())
+                        .append("响应参数: ").append(res).append(System.lineSeparator());
             }
+
+            bean.setId(DateUtil.format(new Date(), DatePattern.PURE_DATETIME_PATTERN) + RandomUtil.randomString(5).toUpperCase());
+            enrollLogRepository.save(bean);
 
         } else {
             // 非json数据
             buffer.append("查询时间: ").append(DateUtil.now())
                     .append(System.lineSeparator()).append("非json数据: ").append(res);
         }
+
 
         messageUtil.send(buffer.toString());
     }
