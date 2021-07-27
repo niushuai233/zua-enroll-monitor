@@ -2,6 +2,9 @@ package cc.niushuai.zuaenrollmonitor.util;
 
 import cc.niushuai.zuaenrollmonitor.config.CustomEnv;
 import cc.niushuai.zuaenrollmonitor.constant.CommonConstants;
+import cc.niushuai.zuaenrollmonitor.dao.AccessTokenRepository;
+import cc.niushuai.zuaenrollmonitor.entity.AccessToken;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
@@ -16,7 +19,9 @@ import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static cc.niushuai.zuaenrollmonitor.constant.CommonConstants.*;
 
@@ -35,6 +40,9 @@ public class MessageUtil {
 
     @Resource
     private RestTemplate restTemplate;
+
+    @Resource
+    private AccessTokenRepository accessTokenRepository;
 
     public void send(String message) {
 
@@ -77,8 +85,25 @@ public class MessageUtil {
 
         if (StrUtil.isEmpty(token) || StrUtil.isEmpty(expires) || timeout(expires)) {
             log.info("token不存在或已过期: {}, {}", expires, token);
-            resetToken();
+
+            // 从数据库中取下是否存在未过期的token
+            List<AccessToken> all = accessTokenRepository.findAll();
+            all = all.stream().filter(item -> !timeout(item.getExpireTime())).collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(all)) {
+                resetToken();
+            } else {
+                loadFromDb(all.get(0));
+            }
         }
+    }
+
+    private void loadFromDb(AccessToken accessToken) {
+
+        access_token_map.put(STR_ACCESS_TOKEN, accessToken.getToken());
+        access_token_map.put(STR_UPDATED, accessToken.getCreateTime());
+        access_token_map.put(STR_EXPIRES, accessToken.getExpireTime());
+        log.info("loadFromDb access token str: {}", accessToken.getToken());
+        log.info("loadFromDb access token expires: {}", accessToken.getExpireTime());
     }
 
     private boolean timeout(String expires) {
@@ -102,6 +127,10 @@ public class MessageUtil {
         access_token_map.put(STR_EXPIRES, expires);
         log.info("refresh access token str: {}", access_token);
         log.info("refresh access token expires: {}", expires);
+
+        AccessToken entity = new AccessToken();
+        entity.setId(CommonUtil.randomId()).setToken(access_token).setCreateTime(DateUtil.now()).setExpireTime(expires);
+        accessTokenRepository.save(entity);
     }
 
 }
