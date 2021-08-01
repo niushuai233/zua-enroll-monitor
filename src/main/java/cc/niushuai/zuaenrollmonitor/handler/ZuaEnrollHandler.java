@@ -5,6 +5,7 @@ import cc.niushuai.zuaenrollmonitor.dao.EnrollLogRepository;
 import cc.niushuai.zuaenrollmonitor.entity.EnrollLog;
 import cc.niushuai.zuaenrollmonitor.entity.Result;
 import cc.niushuai.zuaenrollmonitor.entity.Student;
+import cc.niushuai.zuaenrollmonitor.util.KudiDiUtil;
 import cc.niushuai.zuaenrollmonitor.util.MessageUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DatePattern;
@@ -42,24 +43,35 @@ public class ZuaEnrollHandler {
     @Resource
     private EnrollLogRepository enrollLogRepository;
 
-//    @Scheduled(initialDelay = 1000L, fixedDelay = 2 * 60 * 60 * 1000L)
-@Scheduled(cron = "${niushuai233.zua.cron:0 0 0-23/2 * * ?}")
-public void research() {
 
-    if (isNight()) {
-        return;
+    @Scheduled(fixedDelay = 1000L, fixedRate = 2 * 60 * 60 * 1000L)
+    public void testGet() {
+
+
+        String ems = KudiDiUtil.getEms("9865660291832");
+        System.out.println(ems);
     }
 
-    Student student = new Student().setSfzh(customEnv.getIdcardNumber()).setKsh(customEnv.getExamNumber());
 
-    try {
-        String res = restTemplate.postForObject(customEnv.getRequestUrl(), student, String.class);
-        parseHandle(student, res);
-    } catch (Exception e) {
-        log.error("请求失败: {}", e.getMessage(), e);
-        messageUtil.send("请求失败: " + e.getMessage());
+    //@Scheduled(cron = "${niushuai233.zua.cron:0 0 0-23/2 * * ?}")
+    @Scheduled(initialDelay = 1000L, fixedDelay = 2 * 60 * 60 * 1000L)
+    public void research() {
+
+        if (isNight()) {
+            log.info("isNight return");
+            return;
+        }
+
+        Student student = new Student().setSfzh(customEnv.getIdcardNumber()).setKsh(customEnv.getExamNumber());
+
+        try {
+            String res = restTemplate.postForObject(customEnv.getRequestUrl(), student, String.class);
+            parseHandle(student, res);
+        } catch (Exception e) {
+            log.error("请求失败: {}", e.getMessage(), e);
+            messageUtil.send("请求失败: " + e.getMessage());
+        }
     }
-}
 
     private boolean isNight() {
 
@@ -97,6 +109,9 @@ public void research() {
                 buffer.append("\t>").append("EMS:");
                 if (StringUtils.hasText(bean.getKddh())) {
                     buffer.append(bean.getKddh()).append(System.lineSeparator());
+
+                    String ems = KudiDiUtil.getEms(bean.getKddh());
+                    buffer.append(ems).append(System.lineSeparator());
                 } else {
                     buffer.append("暂未查询到快递单号").append(System.lineSeparator());
                 }
