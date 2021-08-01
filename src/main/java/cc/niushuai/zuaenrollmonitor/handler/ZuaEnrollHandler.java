@@ -42,23 +42,24 @@ public class ZuaEnrollHandler {
     @Resource
     private EnrollLogRepository enrollLogRepository;
 
-    @Scheduled(initialDelay = 1000L, fixedDelay = 2 * 60 * 60 * 1000L)
-    public void research() {
+//    @Scheduled(initialDelay = 1000L, fixedDelay = 2 * 60 * 60 * 1000L)
+@Scheduled(cron = "${niushuai233.zua.cron:0 0 0-23/2 * * ?}")
+public void research() {
 
-        if (isNight()){
-            return;
-        }
-
-        Student student = new Student().setSfzh(customEnv.getIdcardNumber()).setKsh(customEnv.getExamNumber());
-
-        try {
-            String res = restTemplate.postForObject(customEnv.getRequestUrl(), student, String.class);
-            parseHandle(student, res);
-        } catch (Exception e) {
-            log.error("请求失败: {}", e.getMessage(), e);
-            messageUtil.send("请求失败: " + e.getMessage());
-        }
+    if (isNight()) {
+        return;
     }
+
+    Student student = new Student().setSfzh(customEnv.getIdcardNumber()).setKsh(customEnv.getExamNumber());
+
+    try {
+        String res = restTemplate.postForObject(customEnv.getRequestUrl(), student, String.class);
+        parseHandle(student, res);
+    } catch (Exception e) {
+        log.error("请求失败: {}", e.getMessage(), e);
+        messageUtil.send("请求失败: " + e.getMessage());
+    }
+}
 
     private boolean isNight() {
 

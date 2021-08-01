@@ -23,4 +23,5 @@ public class CustomEnv {
     private String secret;
     private String toUser;
     private String night;
+    private String cron;
 }

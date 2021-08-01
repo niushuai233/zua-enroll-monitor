@@ -21,8 +21,9 @@ spring:
 
 niushuai233:
   zua:
-    night: false
-    requestUrl: http://zua-enroll.cpdaily.com/cr-admission/crAdmissionData/queryLqResult
+    night: true
+    cron: 0 0 0-23/2 * * ?
+    requestUrl: http://zua-enroll.cpdaily.com/cr-admission/crAdmissionData/queryLqResult___
     idcardNumber: xxxxx
     examNumber: xxxxx
     agentid: xxxxx
